@@ -57,35 +57,34 @@ if not mt5_connected:
 
 @client.on(events.NewMessage)
 async def new_message(event):
-
-    # ----------------------------------------------
-    # 1. Correct Telegram group
-    # ----------------------------------------------
-
+    # Only listen to the XNINE LEVEL 1 group.
     if event.chat_id not in SIGNAL_CHANNELS:
         return
 
-    # ----------------------------------------------
-    # 2. Correct topic
-    # ----------------------------------------------
+    reply_to = event.message.reply_to
 
-    if not event.message.reply_to:
+    # Identify the topic for both setup messages and replies.
+    if reply_to:
+        topic_id = (
+            reply_to.reply_to_top_id
+            if reply_to.reply_to_top_id is not None
+            else reply_to.reply_to_msg_id
+        )
+    else:
+        topic_id = event.message.id
+
+    # Ignore every topic except XAU Algo 1M (Topic 114).
+    if topic_id != XAU_ALGO_1M_TOPIC_ID:
         return
 
-    if event.message.reply_to.reply_to_top_id != XAU_ALGO_1M_TOPIC_ID:
-        return
-
-    # ----------------------------------------------
-    # 3. Get text
-    # ----------------------------------------------
-
-    text = event.message.raw_text
+    # Get and print every message in Topic 114.
+    text = event.raw_text
 
     if not text or not text.strip():
         return
 
     print("\n\n==========================================")
-    print("NEW XAU ALGO 1M TELEGRAM SIGNAL")
+    print("NEW XAU ALGO 1M TELEGRAM MESSAGE")
     print("==========================================")
     print(text)
     print("==========================================")
