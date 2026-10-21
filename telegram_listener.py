@@ -62,7 +62,7 @@ async def new_message(event):
         return
 
     reply_to = event.message.reply_to
-
+ 
     # Identify the topic for both setup messages and replies.
     if reply_to:
         topic_id = (
@@ -90,14 +90,41 @@ async def new_message(event):
     print("==========================================")
 
     # ----------------------------------------------
-    # 4. Parse signal
+    # 4. Route the Telegram message
     # ----------------------------------------------
 
+    message_lower = text.lower()
+
+    # A. Close notifications
+    if "close with profit due to the opposite trade" in message_lower:
+        print("MESSAGE TYPE: CLOSE WITH PROFIT")
+        print("Close notification recognized.")
+        return
+
+    if "close with loss due to the opposite trade" in message_lower:
+        print("MESSAGE TYPE: CLOSE WITH LOSS")
+        print("Close notification recognized.")
+        return
+
+    # B. Take-profit updates
+    if (
+        "xauusd" in message_lower
+        and "tp" in message_lower
+        and ("+" in text or "points" in message_lower)
+    ):
+        print("MESSAGE TYPE: TAKE-PROFIT UPDATE")
+        print("TP update recognized. No trade action taken.")
+        return
+
+    # C. Otherwise, try to parse a new trade setup
     signal = parse_signal(text)
 
     if signal is None:
-        print("Signal parsing failed.")
+        print("MESSAGE TYPE: OTHER / NOT A TRADE SETUP")
+        print("Message ignored.")
         return
+
+    print("MESSAGE TYPE: NEW TRADE SETUP")
 
     print("\n========== PARSED SIGNAL ==========")
     print(f"Symbol:      {signal.symbol}")
